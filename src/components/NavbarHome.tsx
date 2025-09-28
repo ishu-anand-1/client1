@@ -1,8 +1,8 @@
+// pages/home/page.tsx OR app/page.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import NavbarHome from "@/components/NavbarHome";
 
 export default function Home() {
   const [name, setName] = useState("");
@@ -42,10 +42,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-black text-gray-800 dark:text-white">
-      <NavbarHome />
-
-      <div className="flex flex-col md:flex-row items-center justify-around gap-10 px-6 py-12 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-black text-gray-800 dark:text-white flex items-center justify-center p-6">
+      <div className="flex flex-col md:flex-row items-center justify-around gap-10 max-w-7xl w-full">
         {/* Welcome Section */}
         <div className="max-w-lg text-center md:text-left space-y-4">
           <h1 className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
