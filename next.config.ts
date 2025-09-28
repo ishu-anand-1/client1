@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   // ✅ Enables React strict mode (helps catch potential bugs)
   reactStrictMode: true,
 
-  // ✅ Use SWC minifier (faster builds)
-  swcMinify: true,
+  // NOTE: swcMinify is deprecated in Next.js 15 and has been removed.
+  // The SWC minifier is now used by default.
 
   // ✅ Configure allowed image domains
   images: {
@@ -14,7 +14,9 @@ const nextConfig: NextConfig = {
 
   // ✅ Optional: enable experimental features
   experimental: {
-    serverActions: true,
+    // FIX: Changed 'serverActions: true' to 'serverActions: {}'
+    // to resolve the warning about receiving a boolean instead of an object.
+    serverActions: {},
   },
 
   // ✅ Output standalone build (useful for Docker/production)
