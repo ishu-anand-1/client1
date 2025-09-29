@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -15,6 +15,12 @@ interface Item {
   rate: number;
 }
 
+interface Product {
+  description: string;
+  rate: number;
+  stock: number;
+}
+
 export default function InvoicePage() {
   const router = useRouter();
 
@@ -26,9 +32,7 @@ export default function InvoicePage() {
   const [companyPhone, setCompanyPhone] = useState("");
 
   const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(
-    new Date().toISOString().slice(0, 10)
-  );
+  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10));
   const [placeOfSupply, setPlaceOfSupply] = useState("");
 
   const [customerName, setCustomerName] = useState("");
@@ -40,6 +44,9 @@ export default function InvoicePage() {
     { description: "", hsn: "", quantity: 1, rate: 0 },
   ]);
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [stockWarnings, setStockWarnings] = useState<{ [key: number]: boolean }>({});
+
   const [cgst, setCgst] = useState(9);
   const [sgst, setSgst] = useState(9);
 
@@ -48,11 +55,14 @@ export default function InvoicePage() {
   const [ifsc, setIfsc] = useState("");
   const [branch, setBranch] = useState("");
 
+  // ---------- Load products ----------
+  useEffect(() => {
+    const savedProducts = localStorage.getItem("products");
+    if (savedProducts) setProducts(JSON.parse(savedProducts));
+  }, []);
+
   // ---------- Calculations ----------
-  const subtotal = items.reduce(
-    (acc, item) => acc + item.quantity * item.rate,
-    0
-  );
+  const subtotal = items.reduce((acc, item) => acc + item.quantity * item.rate, 0);
   const cgstAmount = (subtotal * cgst) / 100;
   const sgstAmount = (subtotal * sgst) / 100;
   const total = subtotal + cgstAmount + sgstAmount;
@@ -60,19 +70,45 @@ export default function InvoicePage() {
   // ---------- Handlers ----------
   const handleAddItem = () =>
     setItems([...items, { description: "", hsn: "", quantity: 1, rate: 0 }]);
-  const handleDeleteItem = (index: number) =>
+
+  const handleDeleteItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
-  const handleItemChange = (
-    index: number,
-    field: keyof Item,
-    value: string | number
-  ) => {
+    setStockWarnings((prev) => {
+      const updated = { ...prev };
+      delete updated[index];
+      return updated;
+    });
+  };
+
+  const handleItemChange = (index: number, field: keyof Item, value: string | number) => {
     const newItems = [...items];
     newItems[index] = {
       ...newItems[index],
       [field]: field === "quantity" || field === "rate" ? Number(value) : String(value),
-    } as Item;
+    };
+
+    // Check stock if quantity or description changes
+    if (field === "quantity" || field === "description") {
+      const product = products.find((p) => p.description === newItems[index].description);
+      if (product) {
+        // Auto-fill rate
+        if (field === "description") newItems[index].rate = product.rate;
+
+        setStockWarnings((prev) => ({
+          ...prev,
+          [index]: newItems[index].quantity > product.stock,
+        }));
+      }
+    }
+
     setItems(newItems);
+  };
+
+  const getSuggestions = (value: string) => {
+    if (!value) return [];
+    return products.filter((p) =>
+      p.description.toLowerCase().includes(value.toLowerCase())
+    );
   };
 
   const handleSave = async () => {
@@ -184,135 +220,122 @@ export default function InvoicePage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="space-y-4">
               <Field label="Company Name">
-                <Input
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                />
+                <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
               </Field>
               <Field label="Company GSTIN">
-                <Input
-                  value={companyGst}
-                  onChange={(e) => setCompanyGst(e.target.value)}
-                />
+                <Input value={companyGst} onChange={(e) => setCompanyGst(e.target.value)} />
               </Field>
               <Field label="Company Email">
-                <Input
-                  value={companyEmail}
-                  onChange={(e) => setCompanyEmail(e.target.value)}
-                />
+                <Input value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} />
               </Field>
               <Field label="Company Address">
-                <Input
-                  value={companyAddress}
-                  onChange={(e) => setCompanyAddress(e.target.value)}
-                />
+                <Input value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} />
               </Field>
               <Field label="Company Phone">
-                <Input
-                  value={companyPhone}
-                  onChange={(e) => setCompanyPhone(e.target.value)}
-                />
+                <Input value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} />
               </Field>
             </div>
             <div className="space-y-4">
               <Field label="Customer Name">
-                <Input
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                />
+                <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
               </Field>
               <Field label="Customer GSTIN">
-                <Input
-                  value={customerGST}
-                  onChange={(e) => setCustomerGST(e.target.value)}
-                />
+                <Input value={customerGST} onChange={(e) => setCustomerGST(e.target.value)} />
               </Field>
               <Field label="Customer PAN">
-                <Input
-                  value={customerPAN}
-                  onChange={(e) => setCustomerPAN(e.target.value)}
-                />
+                <Input value={customerPAN} onChange={(e) => setCustomerPAN(e.target.value)} />
               </Field>
               <Field label="Billing Address">
-                <Input
-                  value={billingAddress}
-                  onChange={(e) => setBillingAddress(e.target.value)}
-                />
+                <Input value={billingAddress} onChange={(e) => setBillingAddress(e.target.value)} />
               </Field>
             </div>
           </CardContent>
         </Card>
 
         {/* 3️⃣ Items Section */}
-        <Card className="shadow-md rounded-2xl">
-          <CardHeader className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-semibold text-indigo-700">
-              Items
-            </CardTitle>
-            <Button
-              onClick={handleAddItem}
-              className="bg-indigo-600 hover:bg-indigo-700 shadow-sm"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Item
+     {/* 3️⃣ Items Section */}
+<Card className="shadow-md rounded-2xl">
+  <CardHeader className="flex justify-between items-center">
+    <CardTitle className="text-2xl font-semibold text-indigo-700">Items</CardTitle>
+    <Button onClick={handleAddItem} className="bg-indigo-600 hover:bg-indigo-700 shadow-sm">
+      <Plus className="w-4 h-4 mr-1" /> Add Item
+    </Button>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    {items.map((item, i) => {
+      // Filter suggestions only if user typed something and it matches
+      const suggestions = item.description
+        ? products.filter((p) =>
+            p.description.toLowerCase().includes(item.description.toLowerCase())
+          )
+        : [];
+
+      return (
+        <div key={i} className="grid grid-cols-6 gap-3 items-end border-b pb-4 relative">
+          {/* Description with suggestions */}
+          <Field label="Description">
+            <div className="relative">
+              <Input
+                value={item.description}
+                onChange={(e) => handleItemChange(i, "description", e.target.value)}
+                placeholder="Type product name..."
+              />
+              {suggestions.length > 0 && (
+                <ul className="absolute top-full left-0 w-full bg-white border rounded shadow max-h-40 overflow-y-auto z-10">
+                  {suggestions.map((s, j) => (
+                    <li
+                      key={j}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleItemChange(i, "description", s.description)}
+                    >
+                      {s.description}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Field>
+
+          <Field label="HSN">
+            <Input
+              value={item.hsn}
+              onChange={(e) => handleItemChange(i, "hsn", e.target.value)}
+            />
+          </Field>
+
+          <Field label="Quantity">
+            <Input
+              type="number"
+              value={item.quantity}
+              onChange={(e) => handleItemChange(i, "quantity", e.target.value)}
+            />
+            {stockWarnings[i] && (
+              <p className="text-red-500 text-sm mt-1">Low stock!</p>
+            )}
+          </Field>
+
+          <Field label="Rate (₹)">
+            <Input
+              type="number"
+              value={item.rate}
+              onChange={(e) => handleItemChange(i, "rate", e.target.value)}
+            />
+          </Field>
+
+          <Field label="Total">
+            <span className="font-medium">₹{(item.quantity * item.rate).toFixed(2)}</span>
+          </Field>
+
+          <div className="flex justify-center">
+            <Button variant="destructive" onClick={() => handleDeleteItem(i)}>
+              <Trash2 className="w-4 h-4" />
             </Button>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {items.map((item, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-6 gap-3 items-end border-b pb-4"
-              >
-                <Field label="Description">
-                  <Input
-                    value={item.description}
-                    onChange={(e) =>
-                      handleItemChange(i, "description", e.target.value)
-                    }
-                  />
-                </Field>
-                <Field label="HSN">
-                  <Input
-                    value={item.hsn}
-                    onChange={(e) =>
-                      handleItemChange(i, "hsn", e.target.value)
-                    }
-                  />
-                </Field>
-                <Field label="Quantity">
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleItemChange(i, "quantity", e.target.value)
-                    }
-                  />
-                </Field>
-                <Field label="Rate (₹)">
-                  <Input
-                    type="number"
-                    value={item.rate}
-                    onChange={(e) =>
-                      handleItemChange(i, "rate", e.target.value)
-                    }
-                  />
-                </Field>
-                <Field label="Total">
-                  <span className="font-medium">
-                    ₹{item.quantity * item.rate}
-                  </span>
-                </Field>
-                <div className="flex justify-center">
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleDeleteItem(i)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      );
+    })}
+  </CardContent>
+</Card>
 
         {/* 4️⃣ Taxes + Bank + Totals */}
         <Card className="shadow-md rounded-2xl">
@@ -324,30 +347,16 @@ export default function InvoicePage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="space-y-4">
               <Field label="CGST (%)">
-                <Input
-                  type="number"
-                  value={cgst}
-                  onChange={(e) => setCgst(Number(e.target.value))}
-                />
+                <Input type="number" value={cgst} onChange={(e) => setCgst(Number(e.target.value))} />
               </Field>
               <Field label="SGST (%)">
-                <Input
-                  type="number"
-                  value={sgst}
-                  onChange={(e) => setSgst(Number(e.target.value))}
-                />
+                <Input type="number" value={sgst} onChange={(e) => setSgst(Number(e.target.value))} />
               </Field>
               <Field label="Bank Name">
-                <Input
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                />
+                <Input value={bankName} onChange={(e) => setBankName(e.target.value)} />
               </Field>
               <Field label="Account Number">
-                <Input
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
-                />
+                <Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
               </Field>
               <Field label="IFSC Code">
                 <Input value={ifsc} onChange={(e) => setIfsc(e.target.value)} />
@@ -369,16 +378,10 @@ export default function InvoicePage() {
 
         {/* 5️⃣ Actions */}
         <div className="flex justify-between gap-4">
-          <Button
-            onClick={handleSave}
-            className="bg-green-600 hover:bg-green-700 shadow-md px-6 py-2 text-lg"
-          >
+          <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 shadow-md px-6 py-2 text-lg">
             Save Invoice
           </Button>
-          <Button
-            onClick={handlePreview}
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-md px-6 py-2 text-lg"
-          >
+          <Button onClick={handlePreview} className="bg-indigo-600 hover:bg-indigo-700 shadow-md px-6 py-2 text-lg">
             Preview Invoice
           </Button>
         </div>
@@ -388,13 +391,7 @@ export default function InvoicePage() {
 }
 
 /** Small helper for label + content */
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col space-y-1">
       <label className="font-medium text-gray-700">{label}</label>

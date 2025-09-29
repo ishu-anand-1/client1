@@ -44,7 +44,7 @@ export default function Home() {
   };
 
   const handleGetStarted = () => {
-    // Navigate directly to /invoicepage
+    
     router.push("/invoice");
   };
 return (
