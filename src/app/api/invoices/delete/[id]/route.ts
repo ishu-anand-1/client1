@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+// src/app/api/invoices/delete/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Invoice from "@/lib/models/Invoice";
 
+/*  TEMP FIX: Next 15 validator incorrectly infers context.params as Promise.
+    Remove this @ts-expect-error once the Next.js type issue is patched. */
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

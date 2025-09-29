@@ -9,8 +9,6 @@ import { Download, Printer } from "lucide-react";
 export default function PreviewInvoicePage() {
   const router = useRouter();
   const [invoice, setInvoice] = useState<any>(null);
-
-  // Ref for the printable / downloadable section
   const printRef = useRef<HTMLDivElement>(null);
 
   // Load invoice from localStorage
@@ -23,39 +21,37 @@ export default function PreviewInvoicePage() {
   // ---------- Download PDF ----------
   const handleDownload = async () => {
     if (!printRef.current) return;
-    const html2pdf = (await import("html2pdf.js")).default; // dynamic import
-
-    const opt = {
-      margin: 0.5,
-      filename: `Invoice-${invoice?.invoiceNumber || "Invoice"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-    };
-    html2pdf().from(printRef.current).set(opt).save();
+    const html2pdf = (await import("html2pdf.js")).default;
+    html2pdf()
+      .from(printRef.current)
+      .set({
+        margin: 0.5,
+        filename: `Invoice-${invoice?.invoiceNumber || "Invoice"}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+      })
+      .save();
   };
 
   // ---------- Print ----------
   const handlePrint = () => {
     if (!printRef.current) return;
-    const printWindow = window.open("", "", "width=900,height=650");
-    if (!printWindow) return;
-
-    printWindow.document.write(`
+    const w = window.open("", "", "width=900,height=650");
+    if (!w) return;
+    w.document.write(`
       <html>
         <head>
           <title>Invoice</title>
-          <style>
-            body { font-family: sans-serif; padding: 20px; }
-          </style>
+          <style>body{font-family:sans-serif;padding:20px;}</style>
         </head>
         <body>${printRef.current.innerHTML}</body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+    w.document.close();
+    w.focus();
+    w.print();
+    w.close();
   };
 
   if (!invoice) return <p className="p-6">Loading…</p>;
@@ -97,7 +93,7 @@ export default function PreviewInvoicePage() {
           </div>
         </div>
 
-        {/* Everything inside printRef will be included in the PDF/Print */}
+        {/* Printable content */}
         <div ref={printRef}>
           <Card className="shadow-xl rounded-2xl overflow-hidden border border-gray-200 bg-white">
             <CardContent className="p-10">

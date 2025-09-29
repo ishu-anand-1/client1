@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import NavbarHome from "@/components/NavbarHome";
 
 export default function Home() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,88 +43,109 @@ export default function Home() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-black text-gray-800 dark:text-white">
-      <NavbarHome />
+  const handleGetStarted = () => {
+    // Navigate directly to /invoicepage
+    router.push("/invoice");
+  };
+return (
+  <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
+    {/* ✨ Floating gradient blobs */}
+    <div className="absolute inset-0 -z-10">
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply blur-3xl opacity-40 animate-pulse" />
+      <div className="absolute top-1/2 -right-24 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply blur-3xl opacity-40 animate-bounce delay-1000" />
+      <div className="absolute -bottom-24 left-1/3 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply blur-3xl opacity-40 animate-pulse delay-2000" />
+      {/* optional soft grid overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:40px_40px]" />
+    </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-around gap-10 px-6 py-12 max-w-7xl mx-auto">
-        {/* Welcome Section */}
-        <div className="max-w-lg text-center md:text-left space-y-4">
-          <h1 className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-            Welcome to Invoice Generator
-          </h1>
-          <p className="text-gray-700 dark:text-gray-300 text-lg">
-            Create professional invoices in minutes. Boost your brand and
-            billing process with our customizable, industry-specific templates.
-          </p>
-          <Link href="/invoicepage">
-            <button className="mt-4 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition">
-              Get Started
-            </button>
-          </Link>
-        </div>
+    <NavbarHome />
 
-        {/* Register Box */}
-        <div className="bg-white dark:bg-gray-800 shadow-2xl rounded-3xl p-8 w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+    <div className="relative flex flex-col md:flex-row items-center justify-between gap-16 px-6 py-20 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <div className="max-w-xl text-center md:text-left space-y-6">
+        <h1 className="text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-xl">
+          Craft&nbsp;
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-400 animate-gradient-x">
+            Stunning Invoices
+          </span>
+          <br /> in Minutes
+        </h1>
+        <p className="text-lg md:text-xl text-white/90">
+          Boost your business with professional, customizable invoice templates
+          and instant PDF export.
+        </p>
 
-          {message && (
-            <div
-              className={`mb-4 text-center ${
-                message.startsWith("✅") ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {message}
-            </div>
-          )}
+        <button
+          onClick={handleGetStarted}
+          className="mt-6 px-10 py-4 rounded-full font-semibold shadow-2xl bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 transition-transform transform hover:scale-110 focus:ring-4 focus:ring-pink-300"
+        >
+          🚀 Get Started
+        </button>
+      </div>
 
-          <form onSubmit={handleRegister} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              required
-            />
+      {/* Registration Card */}
+      <div className="w-full max-w-md rounded-3xl border border-white/20 bg-white/10 backdrop-blur-2xl p-8 shadow-[0_0_40px_rgba(255,255,255,0.15)]">
+        <h2 className="text-3xl font-bold mb-6 text-center tracking-wide">
+          Join Us
+        </h2>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 rounded-lg text-white font-semibold ${
-                loading
-                  ? "bg-blue-300 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              } transition`}
-            >
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
+        {message && (
+          <div
+            className={`mb-4 text-center font-medium ${
+              message.startsWith("✅") ? "text-green-300" : "text-red-300"
+            }`}
+          >
+            {message}
+          </div>
+        )}
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
-            Already have an account?{" "}
-            <Link href="/login" className="text-blue-500 hover:underline">
-              Login
-            </Link>
-          </p>
-        </div>
+        <form onSubmit={handleRegister} className="space-y-5">
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full p-3 rounded-lg bg-white/20 border border-white/30 placeholder-white/60 focus:ring-2 focus:ring-pink-400 focus:outline-none transition"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-3 rounded-lg bg-white/20 border border-white/30 placeholder-white/60 focus:ring-2 focus:ring-pink-400 focus:outline-none transition"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 rounded-lg bg-white/20 border border-white/30 placeholder-white/60 focus:ring-2 focus:ring-pink-400 focus:outline-none transition"
+            required
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 rounded-lg font-semibold shadow-lg transition-transform ${
+              loading
+                ? "bg-pink-300 cursor-not-allowed"
+                : "bg-gradient-to-r from-pink-500 to-indigo-500 hover:scale-105 hover:from-pink-600 hover:to-indigo-600"
+            }`}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-white/80">
+          Already have an account?{" "}
+          <a href="/login" className="text-yellow-300 hover:underline">
+            Login
+          </a>
+        </p>
       </div>
     </div>
-  );
-}
+  </div>
+);
+};

@@ -19,7 +19,7 @@ export default function InvoicePage() {
   const router = useRouter();
 
   // ---------- State ----------
-  const [companyName, setCompanyName] = useState("DEV ELECTRICALS");
+  const [companyName, setCompanyName] = useState("");
   const [companyGst, setCompanyGst] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
@@ -68,8 +68,10 @@ export default function InvoicePage() {
     value: string | number
   ) => {
     const newItems = [...items];
-    newItems[index][field] =
-      field === "quantity" || field === "rate" ? Number(value) : String(value);
+    newItems[index] = {
+      ...newItems[index],
+      [field]: field === "quantity" || field === "rate" ? Number(value) : String(value),
+    } as Item;
     setItems(newItems);
   };
 
@@ -248,7 +250,6 @@ export default function InvoicePage() {
               Items
             </CardTitle>
             <Button
-              size="sm"
               onClick={handleAddItem}
               className="bg-indigo-600 hover:bg-indigo-700 shadow-sm"
             >
@@ -302,7 +303,6 @@ export default function InvoicePage() {
                 </Field>
                 <div className="flex justify-center">
                   <Button
-                    size="icon"
                     variant="destructive"
                     onClick={() => handleDeleteItem(i)}
                   >
