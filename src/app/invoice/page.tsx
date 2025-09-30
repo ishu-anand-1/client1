@@ -271,7 +271,7 @@ export default function InvoicePage() {
         : [];
 
       return (
-        <div key={i} className="grid grid-cols-6 gap-3 items-end border-b pb-4 relative">
+        <div key={i} className="grid md:grid-cols-6 grid-cols-2 gap-10 items-end border-b pb-4 relative">
           {/* Description with suggestions */}
           <Field label="Description">
             <div className="relative">
@@ -336,6 +336,7 @@ export default function InvoicePage() {
     })}
   </CardContent>
 </Card>
+
 
         {/* 4️⃣ Taxes + Bank + Totals */}
         <Card className="shadow-md rounded-2xl">
